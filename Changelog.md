@@ -1,10 +1,6 @@
 Changelog
 =========
 
-v4.0.0
------
-*stripped the program
-
 v3.1.3
 ------
 * parallel xz compression
