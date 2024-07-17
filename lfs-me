@@ -19,6 +19,8 @@
 # PERFORMANCE OF THIS SOFTWARE.
 
 #force english output
+#removes the package after uninstall from /var/cache/vasishtha dir
+REMOVE_PACKAGE_AFTER_UNINSTALL=1
 set -e
 export LC_ALL=C
 user_input=
@@ -140,6 +142,9 @@ lfs_me_remove_package() {
 	done
 
 	
+	if [[ "${REMOVE_PACKAGE_AFTER_UNINSTALL}" == "1" ]]; then
+		rm -rf  ${chroot_dir%/}/${package_cache_dir}/${package_name}-*
+	fi
 }
 
 
