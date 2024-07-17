@@ -55,11 +55,11 @@ instruction:
 lfs_me_package() {
 	#todo: add function that checks if the given package is exists or not
 
-	if [[ ! -d ${chroot_dir%}/${package_cache_dir} ]]; then
-		mkdir -p ${chroot_dir%}/${package_cache_dir} 
+	if [[ ! -d ${chroot_dir%/}/${package_cache_dir} ]]; then
+		mkdir -p ${chroot_dir%/}/${package_cache_dir} 
 	fi
 	
-	if find "${chroot_dir%}/${package_cache_dir}" -name "${package_name}-*" -type f | grep -q .; then
+	if find "${chroot_dir%/}/${package_cache_dir}" -name "${package_name}-*" -type f | grep -q .; then
 		arrow_echo "package alredy exists -> ${package_name}-${package_version}"
 		result=$(ask_yes_or_no)
 		if [[ ! "${result}" == "y" && -n "${result}" ]]; then
@@ -82,10 +82,10 @@ lfs_me_package() {
 	sed -i -e "s/^\\.//" "${fakeroot_dir}/LINKS"
 
 	#create package
-	tar -cf "${package_name}-${package_version}.pkg" -I 'xz --threads=0 -c -z -' -C "$fakeroot_dir" .
+	tar -cf "${temp_dir}/${package_name}-${package_version}.pkg" -I 'xz --threads=0 -c -z -' -C "$fakeroot_dir" .
 
 	#move package to cache dir
-	cp "${package_name}-${package_version}.pkg" ${chroot_dir%}/${package_cache_dir}
+	cp "${temp_dir}/${package_name}-${package_version}.pkg" ${chroot_dir%/}/${package_cache_dir}
 	arrow_echo "done installing..."
 
 }
@@ -93,7 +93,7 @@ lfs_me_package() {
 #Get a list of every installed file
 lfs_me_get_installed_files()
 {
-	file_name=${chroot_dir%}/${package_cache_dir}/${package_name}-*
+	file_name=${chroot_dir%/}/${package_cache_dir}/${package_name}-*
 	tar -xf $file_name -C ${temp_dir}
 }
 
@@ -101,12 +101,11 @@ lfs_me_get_installed_files()
 #removes a package (doesn't remove it from the index and doesn't run lfs_me_preremove and lfs_me_postremove )
 lfs_me_remove_package() {
 
-	if [[ ! -d ${chroot_dir%}/${package_cache_dir} ]]; then
-		mkdir -p ${chroot_dir%}/${package_cache_dir} 
+	if [[ ! -d ${chroot_dir%/}/${package_cache_dir} ]]; then
+		mkdir -p ${chroot_dir%/}/${package_cache_dir} 
 	fi
 
-	if find "${chroot_dir%}/${package_cache_dir}" -name "${package_name}-*" -type f | grep -q .; then
-		filest=$(find "${chroot_dir%}/${package_cache_dir}" -name ${package_name}-* -type f)
+	if find "${chroot_dir%/}/${package_cache_dir}" -name "${package_name}-*" -type f | grep -q .; then
 		echo "package found!"
 	else
 		echo "package not found: ${package_name}"
@@ -122,22 +121,22 @@ lfs_me_remove_package() {
 
 	for file in $( cat "${temp_dir}/FILES" )
 	do
-		echo "removing file: ${chroot_dir%}/${file#*/}"
-		rm -f "${chroot_dir%}/${file#*/}"
+		echo "removing file: ${chroot_dir%/}/${file#*/}"
+		rm -f "${chroot_dir%/}/${file#*/}"
 	done
 	for directory in $( sort -r "${temp_dir}/DIRS" )  #Sort in order to remove subdirs first
 	do
-		echo "removing directory: ${chroot_dir%}/${directory#*/}"
-		if [[ -d ${chroot_dir%}/${directory#*/} ]]; then
-			rmdir --ignore-fail-on-non-empty "${chroot_dir%}/${directory#*/}"
+		echo "removing directory: ${chroot_dir%/}/${directory#*/}"
+		if [[ -d ${chroot_dir%/}/${directory#*/} ]]; then
+			rmdir --ignore-fail-on-non-empty "${chroot_dir%/}/${directory#*/}"
 		else
-			arrow_echo "dir not found: ${chroot_dir%}/${directory}"
+			arrow_echo "dir not found: ${chroot_dir%/}/${directory}"
 		fi
 	done
 	for link in $( cat "${temp_dir}/LINKS" )
 	do
-		echo "removing symlink: ${chroot_dir%}/${link#*/}"
-		rm -f "${chroot_dir%}/${link#*/}"
+		echo "removing symlink: ${chroot_dir%/}/${link#*/}"
+		rm -f "${chroot_dir%/}/${link#*/}"
 	done
 
 	
@@ -169,7 +168,7 @@ while getopts ":h?m:r:" opt; do
             		package_version="${sub_args[2]}"
 			chroot_dir=${sub_args[3]}
 
-			if [ -z ${chroot_dir%} ]; then
+			if [ -z ${chroot_dir} ]; then
 				chroot_dir="/"
 			fi
 			lfs_me_package
@@ -179,7 +178,7 @@ while getopts ":h?m:r:" opt; do
 			package_name="${sub_args[0]}"
 			chroot_dir=${sub_args[1]}
 
-			if [ -z ${chroot_dir%} ]; then
+			if [ -z ${chroot_dir} ]; then
 				chroot_dir="/"
 			fi
 			lfs_me_remove_package
